@@ -3,6 +3,11 @@
 
 #include <QMainWindow>
 #include <vector>
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <math.h>
+#include <iostream>
+#include <algorithm>
 
 namespace Ui {
 class MainWindow;

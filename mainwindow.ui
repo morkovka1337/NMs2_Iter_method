@@ -88,7 +88,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Разбиений по х</string>
+     <string>Разбиений по y</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="textEdit">

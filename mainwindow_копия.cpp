@@ -74,13 +74,13 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
     /* невязку будем считать по
      * внутренней сетке, аналогично и с p, A*p */
     /* система -AV = -F, т.к. -A > 0 */
-    auto r_i = std::vector<std::vector<double>>(n - 1, std::vector<double> (m - 1, 0));
-        /* считаем r0, h0 */
-    for (auto i = 0; i < r_i.size(); i++)
+    auto r = std::vector<std::vector<double>>(n - 1, std::vector<double> (m - 1, 0));
+    /* считаем r0, h0 */
+    for (auto i = 0; i < r.size(); i++)
     {
-        for (auto j = 0; j < r_i[i].size(); j++)
+        for (auto j = 0; j < r[i].size(); j++)
         {
-            r_i[i][j] = F[i][j];
+            r[i][j] = F[i][j];
         }
     }
     auto h = std::vector<std::vector<double>>(n - 1, std::vector<double> (m - 1, 0));
@@ -88,15 +88,189 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
     {
         for (auto i = 0; i < h[j].size(); i++)
         {
-            h[i][j] = r_i[i][j];
+            h[i][j] = -r[i][j];
         }
     }
+
+    /* считаем скалярное невязки на h0 */
+    double temp = 0.0;
+    for (auto j = 0; j < r.size(); j++)
+    {
+        for (auto i = 0; i < r[j].size(); i++)
+        {
+            temp += r[i][j] * h[i][j];
+        }
+    }
+    /*считаем A * h0 */
     auto Ah = std::vector<std::vector<double>>(n - 1, std::vector<double> (m - 1, 0));
-
-
-
+    for (auto j = 0; j < h.size(); j++)
+    {
+        for (auto i = 0; i < h[j].size(); i++)
+        {
+            if (j == 0)
+            {
+                if (i == 0)
+                {
+                    Ah[i][j] = -a2 * h[i][j] - h2 * h[i+1][j] - k2 * h[i][j+1];
+                }
+                else if (i == n-2)
+                {
+                    Ah[i][j] = -a2 * h[i][j] - h2 * h[i-1][j] - k2 * h[i][j+1];
+                }
+                else {
+                    Ah[i][j] = -a2 * h[i][j] - h2 * (h[i+1][j] + h[i-1][j]) - k2 * h[i][j+1];
+                }
+            }
+            else if (j == m-2)
+            {
+                if (i == 0)
+                {
+                    Ah[i][j] = -a2 * h[i][j] - h2 * h[i+1][j] - k2 * h[i][j-1];
+                }
+                else if (i == n-2)
+                {
+                    Ah[i][j] = -a2 * h[i][j] - h2 * h[i-1][j] - k2 * h[i][j-1];
+                }
+                else {
+                    Ah[i][j] = -a2 * h[i][j] - h2 * (h[i+1][j] + h[i-1][j]) - k2 * h[i][j-1];
+                }
+            }
+            else {
+                if (i == 0)
+                {
+                    Ah[i][j] = -a2 * h[i][j] - h2 * h[i+1][j] - k2 * (h[i][j-1] + h[i][j+1]);
+                }
+                else if (i == n-2)
+                {
+                    Ah[i][j] = -a2 * h[i][j] - h2 * h[i-1][j] - k2 * (h[i][j-1] + h[i][j+1]);
+                }
+                else {
+                    Ah[i][j] = -a2 * h[i][j] - h2 * (h[i+1][j] + h[i-1][j]) - k2 * (h[i][j-1] + h[i][j+1]);
+                }
+            }
+        }
+    }
+    /*скалярное A*h0, h0 */
+    double temp2 = 0.0;
+    for (auto j = 0; j < h.size(); j++)
+    {
+        for (auto i = 0; i < h[j].size(); i++)
+        {
+            temp2 += Ah[i][j] * h[i][j];
+        }
+    }
+    alpha = - temp / temp2;
+    /* считаем x1 */
+    for (auto j = 0; j < m-1; j++)
+    {
+        for (auto i = 0; i < n-1; i++)
+        {
+            v[i][j] = v[i][j] + alpha * h[i][j];
+        }
+    }
     while (true)
     {
+        /*
+         * 1) пересчитать r1
+         * 2) Скалярно Ah0, r1
+         * 3) beta = поделить Ah0, r1 на Ah0, h0
+         * 4) пересчитать h1
+         * 5) посчитать Ah1
+         * 6) скалярное Ah1, h1
+         * 7) скалярное r1, h1
+         * 8) посчитать alpha1
+         * 9) посчитать x2
+         */
+        residual = 0.0;
+        for (auto j = 0; j < r.size(); j++)
+        {
+            for (auto i = 0; i < r[j].size(); i++)
+            {
+                if (j == 0)
+                {
+                    if (i == 0)
+                    {
+                        r[i][j] = -a2 * v[i][j] - h2 * v[i+1][j] - k2 * v[i][j+1] + F[i][j];
+                    }
+                    else if (i == n-2)
+                    {
+                        r[i][j] = -a2 * v[i][j] - h2 * v[i-1][j] - k2 * v[i][j+1] + F[i][j];
+                    }
+                    else {
+                        r[i][j] = -a2 * v[i][j] - h2 * (v[i+1][j] + v[i-1][j]) - k2 * v[i][j+1] + F[i][j];
+                    }
+                }
+                else if (j == m-2)
+                {
+                    if (i == 0)
+                    {
+                        r[i][j] = -a2 * v[i][j] - h2 * v[i+1][j] - k2 * v[i][j-1] + F[i][j];
+                    }
+                    else if (i == n-2)
+                    {
+                        r[i][j] = -a2 * v[i][j] - h2 * v[i-1][j] - k2 * v[i][j-1] + F[i][j];
+                    }
+                    else {
+                        r[i][j] = -a2 * v[i][j] - h2 * (v[i+1][j] + v[i-1][j]) - k2 * v[i][j-1] + F[i][j];
+                    }
+                }
+                else {
+                    if (i == 0)
+                    {
+                        r[i][j] = -a2 * v[i][j] - h2 * v[i+1][j] - k2 * (v[i][j-1] + v[i][j+1]) + F[i][j];
+                    }
+                    else if (i == n-2)
+                    {
+                        r[i][j] = -a2 * v[i][j] - h2 * v[i-1][j] - k2 * (v[i][j-1] + v[i][j+1]) + F[i][j];
+                    }
+                    else {
+                        r[i][j] = -a2 * v[i][j] - h2 * (v[i+1][j] + v[i-1][j]) - k2 * (v[i][j-1] + v[i][j+1]) + F[i][j];
+                    }
+                }
+
+                if (abs(r[i][j]) > residual)
+                {
+                    residual = abs(r[i][j]);
+                }
+            }
+        }
+
+        double Ah0r1 = 0.0;
+        for (auto j = 0; j < r.size(); j++)
+        {
+            for (auto i = 0; i < r[j].size(); i++)
+            {
+                Ah0r1 += Ah[i][j] * r[i][j];
+            }
+        }
+        double Ah0h0 = 0.0;
+        for (auto j = 0; j < h.size(); j++)
+        {
+            for (auto i = 0; i < h[j].size(); i++)
+            {
+                Ah0h0 += Ah[i][j] * h[i][j];
+            }
+        }
+        beta = Ah0r1 / Ah0h0;
+
+        for (auto j = 0; j < h.size(); j++)
+        {
+            for (auto i = 0; i < h[j].size(); i++)
+            {
+                h[i][j] = -r[i][j] + beta * h[i][j];
+            }
+        }
+
+        double r1h1 = 0.0;
+        for (auto j = 0; j < h.size(); j++)
+        {
+            for (auto i = 0; i < h[j].size(); i++)
+            {
+                r1h1 += r[i][j]* h[i][j];
+            }
+        }
+
+
         for (auto j = 0; j < h.size(); j++)
         {
             for (auto i = 0; i < h[j].size(); i++)
@@ -144,24 +318,16 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
                 }
             }
         }
-        residual = 0.0;
-        auto alphaNominator = 0.0;
-        for (auto j = 0; j <  r_i.size(); j++)
+        double Ah1h1 = 0.0;
+        for (auto j = 0; j < r.size(); j++)
         {
-            for (auto i = 0; i < r_i[j].size(); i++)
+            for (auto i = 0; i < r[j].size(); i++)
             {
-                alphaNominator += r_i[i][j]* r_i[i][j];
+                Ah1h1 += Ah[i][j] * h[i][j];
             }
         }
-        auto alphaDenominator = 0.0;
-        for (auto j = 0; j <  h.size(); j++)
-        {
-            for (auto i = 0; i < h[j].size(); i++)
-            {
-                alphaDenominator += Ah[i][j]* h[i][j];
-            }
-        }
-        alpha = alphaNominator / alphaDenominator;
+        alpha = -r1h1 / Ah1h1;
+
         for (auto j = 0; j < m-1; j++)
         {
             for (auto i = 0; i < n-1; i++)
@@ -169,41 +335,6 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
                 v[i][j] = v[i][j] + alpha * h[i][j];
             }
         }
-
-
-        auto betaNominator = 0.0;
-        auto betaDenominator = 0.0;
-        for (auto j = 0; j <  r_i.size(); j++)
-        {
-            for (auto i = 0; i < r_i[j].size(); i++)
-            {
-                betaDenominator += r_i[i][j]* r_i[i][j];
-            }
-        }
-        for (auto j = 0; j <  r_i.size(); j++)
-        {
-            for (auto i = 0; i < r_i[j].size(); i++)
-            {
-                r_i[i][i] = r_i[i][j] - alpha *  Ah[i][j];
-            }
-        }
-        for (auto j = 0; j <  r_i.size(); j++)
-        {
-            for (auto i = 0; i < r_i[j].size(); i++)
-            {
-                betaNominator += r_i[i][j]* r_i[i][j];
-            }
-        }
-        beta = betaNominator / betaDenominator;
-        for (auto j = 0; j <  h.size(); j++)
-        {
-            for (auto i = 0; i < h[j].size(); i++)
-            {
-                h[i][i] = r_i[i][j] + beta *  h[i][j];
-            }
-        }
-
-
         it += 1;
         if (it >= N || abs(beta) < eps)
         {
@@ -211,58 +342,6 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
         }
 
 
-    }
-    for (auto j = 0; j < r_i.size(); j++)
-    {
-        for (auto i = 0; i < r_i[j].size(); i++)
-        {
-            if (j == 0)
-            {
-                if (i == 0)
-                {
-                    r_i[i][j] = -a2 * v[i][j] - h2 * v[i+1][j] - k2 * v[i][j+1] + F[i][j];
-                }
-                else if (i == n-2)
-                {
-                    r_i[i][j] = -a2 * v[i][j] - h2 * v[i-1][j] - k2 * v[i][j+1] + F[i][j];
-                }
-                else {
-                    r_i[i][j] = -a2 * v[i][j] - h2 * (v[i+1][j] + v[i-1][j]) - k2 * v[i][j+1] + F[i][j];
-                }
-            }
-            else if (j == m-2)
-            {
-                if (i == 0)
-                {
-                    r_i[i][j] = -a2 * v[i][j] - h2 * v[i+1][j] - k2 * v[i][j-1] + F[i][j];
-                }
-                else if (i == n-2)
-                {
-                    r_i[i][j] = -a2 * v[i][j] - h2 * v[i-1][j] - k2 * v[i][j-1] + F[i][j];
-                }
-                else {
-                    r_i[i][j] = -a2 * v[i][j] - h2 * (v[i+1][j] + v[i-1][j]) - k2 * v[i][j-1] + F[i][j];
-                }
-            }
-            else {
-                if (i == 0)
-                {
-                    r_i[i][j] = -a2 * v[i][j] - h2 * v[i+1][j] - k2 * (v[i][j-1] + v[i][j+1]) + F[i][j];
-                }
-                else if (i == n-2)
-                {
-                    r_i[i][j] = -a2 * v[i][j] - h2 * v[i-1][j] - k2 * (v[i][j-1] + v[i][j+1]) + F[i][j];
-                }
-                else {
-                    r_i[i][j] = -a2 * v[i][j] - h2 * (v[i+1][j] + v[i-1][j]) - k2 * (v[i][j-1] + v[i][j+1]) + F[i][j];
-                }
-            }
-
-            if (abs(r_i[i][j]) > residual)
-            {
-                residual = abs(r_i[i][j]);
-            }
-        }
     }
     QMessageBox msgBox;
     msgBox.setInformativeText(QString("При решении Р.С. с помощью метода Зейделя с параметрами NMax = ") +

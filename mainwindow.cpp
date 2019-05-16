@@ -42,6 +42,14 @@ double myu4_test(double x)
 {
     return sin(M_PI *x*3);
 }
+double myu5_test(double x)
+{
+    return sin(M_PI *x* 2.5);
+}
+double myu6_test(double y)
+{
+    return sin(M_PI * y * 1.5);
+}
 
 std::vector<std::vector<double>> computeResidual(std::vector<std::vector<double>> &v,
                                                  std::vector<std::vector<double>> &F,
@@ -62,24 +70,24 @@ std::vector<std::vector<double>> computeResidual(std::vector<std::vector<double>
             {
                 if (i >= 1 && i <= n-1 && j >= 1 && j <= m - 1)
                 {
-                    r[i][j] = a2 * v[i][j] + h2 * (v[i+1][j] + v[i-1][j]) +
-                            k2 * (v[i][j-1] + v[i][j+1]) - F[i-1][j-1];
+                    r[i][j] = F[i-1][j-1] - a2 * v[i][j] - h2 * (v[i+1][j] + v[i-1][j]) -
+                            k2 * (v[i][j-1] + v[i][j+1]);
                 }
                 else if (i == 0)
                 {
-                    r[i][j] = v[i][j] - myu1_test(c + j * (d - c) / m);
+                    r[i][j] = -v[i][j] + myu1_test(c + j * (d - c) / m);
                 }
                 else if (i == n)
                 {
-                    r[i][j] = v[i][j] - myu2_test(c + j * (d - c) / m);
+                    r[i][j] = -v[i][j] + myu2_test(c + j * (d - c) / m);
                 }
                 else if (j == 0)
                 {
-                    r[i][j] = v[i][j] - myu3_test(a + i * (b - a) / n);
+                    r[i][j] = -v[i][j] + myu3_test(a + i * (b - a) / n);
                 }
                 else if (j == m)
                 {
-                    r[i][j] = v[i][j] - myu4_test(a + i * (b - a) / n);
+                    r[i][j] = -v[i][j] + myu4_test(a + i * (b - a) / n);
                 }
             }
         }
@@ -92,29 +100,113 @@ std::vector<std::vector<double>> computeResidual(std::vector<std::vector<double>
             {
                 if (i >= 1 && i <= n-1 && j >= 1 && j <= m - 1)
                 {
-                    r[i][j] = a2 * v[i][j] + h2 * (v[i+1][j] + v[i-1][j]) +
-                            k2 * (v[i][j-1] + v[i][j+1]) - F[i-1][j-1];
+                    r[i][j] = F[i-1][j-1] - a2 * v[i][j] - h2 * (v[i+1][j] + v[i-1][j]) -
+                            k2 * (v[i][j-1] + v[i][j+1]);
                 }
                 else if (i == 0)
                 {
-                    r[i][j] = v[i][j] - mu1(c + j * (d - c) / m);
+                    r[i][j] = -v[i][j] + mu1(c + j * (d - c) / m);
                 }
                 else if (i == n)
                 {
-                    r[i][j] = v[i][j] - mu2(c + j * (d - c) / m);
+                    r[i][j] = -v[i][j] + mu2(c + j * (d - c) / m);
                 }
                 else if (j == 0)
                 {
-                    r[i][j] = v[i][j] - mu3(a + i * (b - a) / n);
+                    r[i][j] = -v[i][j] + mu3(a + i * (b - a) / n);
                 }
                 else if (j == m)
                 {
-                    r[i][j] = v[i][j] - mu4(a + i * (b - a) / n);
+                    r[i][j] = -v[i][j] + mu4(a + i * (b - a) / n);
                 }
             }
         }
     }
     return r;
+}
+
+std::vector<std::vector<double>> computeResidualCut(std::vector<std::vector<double>> &v,
+                                                 std::vector<std::vector<double>> &F)
+{
+    double a = 1, b = 2, c = 2, d = 3;
+    auto n = v.size() - 1;
+    auto m = v[0].size() - 1;
+    double h2 = -(n/(b-a))*(n/(b-a));
+    double k2 = -(m/(d-c))*(m/(d-c));
+    double a2 = -2*(h2+k2);
+    auto r = std::vector<std::vector<double>>(n/2 + 1, std::vector<double> (m + 1, 0));
+    for (int i = 0; i < n/2; ++i) {
+        r.push_back(std::vector<double> (m/2 + 1, 0));
+    }
+    for (unsigned i = 0; i < r.size(); i++)
+    {
+        for (unsigned j = 0; j < r[i].size(); j++)
+        {
+            if ((i >= 1 && i <= n-1 && j >= 1 && j <= m/2 - 1) ||
+                  (i >= 1 && i <= n/2-1 && j >= m/2-1 && j <= m - 1)  )
+            {
+                r[i][j] = F[i-1][j-1] - a2 * v[i][j] - h2 * (v[i+1][j] + v[i-1][j]) -
+                        k2 * (v[i][j-1] + v[i][j+1]);
+            }
+            else if (i == 0)
+            {
+                r[i][j] = -v[i][j] + myu1_test(c + j * (d - c) / m);
+            }
+            else if (i == n)
+            {
+                r[i][j] = -v[i][j] + myu2_test(c + j * (d - c) / m);
+            }
+            else if (j == 0)
+            {
+                r[i][j] = -v[i][j] + myu3_test(a + i * (b - a) / n);
+            }
+            else if (j == m)
+            {
+                r[i][j] = -v[i][j] + myu4_test(a + i * (b - a) / n);
+            }
+            else if (j == m/2)
+            {
+                r[i][j] = -v[i][j] + myu5_test(a + i * (b - a) / n);
+            }
+            else if (i == n/2)
+            {
+                r[i][j] = -v[i][j] + myu6_test(c + j * (d - c) / m);
+            }
+        }
+    }
+
+    return r;
+}
+
+
+std::vector<std::vector<double>> matrixOnVecCut(std::vector<std::vector<double>> &h)
+{
+    double a = 1, b = 2, c = 2, d = 3;
+    auto n = h.size() - 1;
+    auto m = h[0].size() - 1;
+    double h2 = -(n/(b-a))*(n/(b-a));
+    double k2 = -(m/(d-c))*(m/(d-c));
+    double a2 = -2*(h2+k2);
+    auto Ah = std::vector<std::vector<double>>(n/2 + 1, std::vector<double> (m + 1, 0));
+    for (int i = 0; i < n/2; ++i) {
+        Ah.push_back(std::vector<double> (m/2 + 1, 0));
+    }for (unsigned j = 0; j < h.size(); j++)
+    {
+        for (unsigned i = 0; i < h[j].size(); i++)
+        {
+            if ((i >= 1 && i <= n-1 && j >= 1 && j <= m/2 - 1) ||
+                  (i >= 1 && i <= n/2-1 && j >= m/2-1 && j <= m - 1)  )
+            {
+                Ah[i][j] = a2 * h[i][j] + h2 * (h[i+1][j] + h[i-1][j]) +
+                        k2 * (h[i][j-1] + h[i][j+1]);
+            }
+            else
+            {
+                Ah[i][j] = h[i][j];
+            }
+        }
+    }
+    return Ah;
 }
 
 std::vector<std::vector<double>> matrixOnVec(std::vector<std::vector<double>> &h)
@@ -191,7 +283,7 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
     {
         for (unsigned i = 0; i < h[j].size(); i++)
         {
-            h[i][j] = -r[i][j];
+            h[i][j] = r[i][j];
         }
     }
 
@@ -200,7 +292,7 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
 
         Ah = matrixOnVec(h);
         epsMax = 0.0;
-        alpha = - vectorOnVector(r, h) / vectorOnVector(Ah, h);
+        alpha =  vectorOnVector(r, r) / vectorOnVector(h, Ah);
         /* считаем x1 */
         for (unsigned j = 0; j < m+1; j++)
         {
@@ -226,14 +318,21 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
                }
             }
         }
-        r = computeResidual(v, F, test);
-        beta = vectorOnVector(Ah, r) / vectorOnVector(Ah, h);
+        double betaDenominator = vectorOnVector(r, r);
+        for (unsigned j = 0; j < r.size(); j++)
+        {
+            for (unsigned i = 0; i < r[j].size(); i++)
+            {
+                r[i][j] = r[i][j] - alpha * Ah[i][j];
+            }
+        }
+        beta = vectorOnVector(r, r) / betaDenominator;
 
         for (unsigned j = 0; j < h.size(); j++)
         {
             for (unsigned i = 0; i < h[j].size(); i++)
             {
-                h[i][j] = -r[i][j] + beta * h[i][j];
+                h[i][j] = r[i][j] + beta * h[i][j];
             }
         }
 
@@ -251,7 +350,117 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
                               QString::number(eps) + QString(" за S = ") +
                               QString::number(it) + QString(" итераций было получено решение \nс точностью eps max = ") +
                               QString::number(epsMax) + QString(" Невязка составила: ") + QString::number(residual)
-                              +QString(". Параметр beta = ") + QString::number(beta)
+
+                              );
+    msgBox.exec();
+    return v;
+}
+
+std::vector<std::vector<double>> solveConjugateGradientCut(std::vector<std::vector<double>> &startSolution,
+                                                    std::vector<std::vector<double>> &F, unsigned int n, unsigned int m,
+                                                    unsigned long N, double eps)
+{
+    auto v = startSolution;
+    double residual = 0.0;
+    double alpha = 0.0;
+    double beta = 0.0;
+    double epsMax = 0;
+    double epsCur = 0.0;
+    unsigned int it = 0;
+    auto r = computeResidualCut(v, F);
+    auto Ah = std::vector<std::vector<double>>(n/2 + 1, std::vector<double> (m + 1, 0));
+    for (int i = 0; i < n/2; ++i) {
+        Ah.push_back(std::vector<double> (m/2 + 1, 0));
+    }
+    auto h = std::vector<std::vector<double>>(n/2 + 1, std::vector<double> (m + 1, 0));
+    for (int i = 0; i < n/2; ++i) {
+        h.push_back(std::vector<double> (m/2 + 1, 0));
+    }
+    for (unsigned j = 0; j < h.size(); j++)
+    {
+        for (unsigned i = 0; i < h[j].size(); i++)
+        {
+            h[i][j] = r[i][j];
+        }
+    }
+
+    while (true)
+    {
+
+        Ah = matrixOnVecCut(h);
+        epsMax = 0.0;
+        alpha =  vectorOnVector(r, r) / vectorOnVector(h, Ah);
+        /* считаем x1 */
+        for (unsigned j = 0; j < m/2+1; j++)
+        {
+            for (unsigned i = 0; i < n+1; i++)
+            {
+                double vOld = v[i][j];
+                v[i][j] = v[i][j] + alpha * h[i][j];
+                epsCur = abs(vOld - v[i][j]);
+                if (epsCur > epsMax)
+                {
+                    epsMax = epsCur;
+                }
+            }
+        }
+        for (unsigned j = m / 2 + 1; j < m + 1; j++)
+        {
+            for (unsigned i = 0; i < n / 2 +1; i++)
+            {
+                double vOld = v[i][j];
+                v[i][j] = v[i][j] + alpha * h[i][j];
+                epsCur = abs(vOld - v[i][j]);
+                if (epsCur > epsMax)
+                {
+                    epsMax = epsCur;
+                }
+            }
+        }
+        residual = 0.0;
+        for (unsigned j = 0; j < r.size(); j++)
+        {
+            for (unsigned i = 0; i < r[j].size(); i++)
+            {
+               if (abs(r[i][j]) > residual)
+               {
+                   residual = abs(r[i][j]);
+               }
+            }
+        }
+        double betaDenominator = vectorOnVector(r, r);
+        for (unsigned j = 0; j < r.size(); j++)
+        {
+            for (unsigned i = 0; i < r[j].size(); i++)
+            {
+                r[i][j] = r[i][j] - alpha * Ah[i][j];
+            }
+        }
+        beta = vectorOnVector(r, r) / betaDenominator;
+
+        for (unsigned j = 0; j < h.size(); j++)
+        {
+            for (unsigned i = 0; i < h[j].size(); i++)
+            {
+                h[i][j] = r[i][j] + beta * h[i][j];
+            }
+        }
+
+        it += 1;
+        if (it >= N || abs(beta) < 1e-14 || epsMax < eps)
+        {
+            break;
+        }
+
+
+    }
+    QMessageBox msgBox;
+    msgBox.setInformativeText(QString("При решении Р.С. с помощью метода сопряженных градиентов с параметрами NMax = ") +
+                              QString::number(N) + QString("\nи eps = ") +
+                              QString::number(eps) + QString(" за S = ") +
+                              QString::number(it) + QString(" итераций было получено решение \nс точностью eps max = ") +
+                              QString::number(epsMax) + QString(" Невязка составила: ") + QString::number(residual)
+
                               );
     msgBox.exec();
     return v;
@@ -266,7 +475,7 @@ std::vector<std::vector<double>> solve_Zeidel(std::vector<std::vector<double>> &
     double epsCur = 0.0;
     double a2, k2, h2;
     double a = 1, b = 2, c = 2, d = 3;
-    int i, j;
+    unsigned i, j;
     double vOld;
     double vNew;
     h2 = (n/(b-a))*(n/(b-a));
@@ -350,30 +559,102 @@ void MainWindow::on_pushButton_clicked()
     double eps = ui->textEdit->toPlainText().toDouble();
     double h = double(b-a) / double(n);
     double k = double(d-c) / double(m);
-    auto startSolution = std::vector<std::vector<double>>(n + 1, std::vector<double> (m + 1, 0));
-    auto f = std::vector<std::vector<double>>(n - 1, std::vector<double> (m - 1, 0));
-    for (unsigned int i = 0; i < n - 1; ++i)
+    std::vector<std::vector<double>> startSolution, f, accurateSolution;
+    if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
     {
-        for (unsigned int j = 0; j < m - 1; ++j)
-        {
-            f[i][j] = - f_test(a + (i + 1) * h, c + (j + 1) * k);
+        startSolution = std::vector<std::vector<double>>(n + 1, std::vector<double> (m + 1, 0));
+    }
+    else if (ui->comboBox_2->currentText() == "Задача на вырезанном прямоугольнике")
+    {
+        startSolution = std::vector<std::vector<double>>(n/2 + 1, std::vector<double> (m + 1, 0));
+        for (int i = 0; i < n/2; ++i) {
+            startSolution.push_back(std::vector<double> (m/2 + 1, 0));
         }
     }
-    for (int j = 0; j <= m; ++j)
+    if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
     {
-        startSolution[0][j] = myu1_test(2 + j * k);
+        f = std::vector<std::vector<double>>(n - 1, std::vector<double> (m - 1, 0));
     }
-    for (int j = 0; j <= m; ++j)
+    else if (ui->comboBox_2->currentText() == "Задача на вырезанном прямоугольнике")
     {
-        startSolution[n][j] = myu2_test(2 + j * k);
+        f = std::vector<std::vector<double>>(n/2, std::vector<double> (m - 1, 0));
+        for (int i = 0; i < n/2-1; ++i) {
+            f.push_back(std::vector<double> (m/2 - 1, 0));
+        }
     }
-    for (int i = 0; i <= n; ++i)
+    if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
     {
-        startSolution[i][0] = myu3_test(1 + i * h);
+        for (unsigned int i = 0; i < n - 1; ++i)
+        {
+            for (unsigned int j = 0; j < m - 1; ++j)
+            {
+                f[i][j] = - f_test(a + (i + 1) * h, c + (j + 1) * k);
+            }
+        }
+
     }
-    for (int i = 0; i <= n; ++i)
+    else if (ui->comboBox_2->currentText() == "Задача на вырезанном прямоугольнике")
     {
-        startSolution[i][m] = myu4_test(1 + i * h);
+        for (unsigned int i = 0; i < n - 1 ; ++i)
+        {
+            for (unsigned int j = 0; j < m/2 - 1 ; ++j)
+            {
+                 f[i][j] = - f_test(a + (i + 1) * h, c + (j + 1) * k);
+            }
+        }
+        for (unsigned int i = 0; i < n/2 ; ++i)
+        {
+            for (unsigned int j = m/2-1; j < m - 1 ; ++j)
+            {
+                 f[i][j] = - f_test(a + (i + 1) * h, c + (j + 1) * k);
+            }
+        }
+    }
+    if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
+    {
+        for (int j = 0; j <= m; ++j)
+        {
+            startSolution[0][j] = myu1_test(2 + j * k);
+        }
+        for (int j = 0; j <= m; ++j)
+        {
+            startSolution[n][j] = myu2_test(2 + j * k);
+        }
+        for (int i = 0; i <= n; ++i)
+        {
+            startSolution[i][0] = myu3_test(1 + i * h);
+        }
+        for (int i = 0; i <= n; ++i)
+        {
+            startSolution[i][m] = myu4_test(1 + i * h);
+        }
+    }
+    else if (ui->comboBox_2->currentText() == "Задача на вырезанном прямоугольнике")
+    {
+        for (int j = 0; j <= m; ++j)
+        {
+            startSolution[0][j] = myu1_test(2 + j * k);
+        }
+        for (int j = 0; j <= m/2; ++j)
+        {
+            startSolution[n][j] = myu2_test(2 + j * k);
+        }
+        for (int i = 0; i <= n; ++i)
+        {
+            startSolution[i][0] = myu3_test(1 + i * h);
+        }
+        for (int i = 0; i <= n/2; ++i)
+        {
+            startSolution[i][m] = myu4_test(1 + i * h);
+        }
+        for (int i = n/2; i <= n; ++i)
+        {
+            startSolution[i][m/2] = myu5_test(1 + i * h);
+        }
+        for (int j = m/2; j <= m; ++j)
+        {
+            startSolution[n/2][j] = myu6_test(2 + j * k);
+        }
     }
     auto solution = startSolution;
     if (ui->comboBox->currentText() == "Метод Зейделя")
@@ -381,41 +662,127 @@ void MainWindow::on_pushButton_clicked()
         solution = solve_Zeidel(startSolution, f, n, m, limit, eps);
     }
 
-    if (ui->comboBox->currentText() == "Метод сопряженных градиентов")
+    else if (ui->comboBox->currentText() == "Метод сопряженных градиентов")
     {
-        solution = solveConjugateGradient(startSolution, f, n, m, limit, eps, true);
-    }
-    auto accurateSolution = std::vector<std::vector<double>>(n + 1, std::vector<double> (m + 1, 0));
-
-    for (unsigned int i = 0; i < n + 1 ; ++i)
-    {
-        for (unsigned int j = 0; j < m + 1 ; ++j)
+        if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
         {
-            accurateSolution[i][j] = acc_u(a + i * h, c + j * k);
+            solution = solveConjugateGradient(startSolution, f, n, m, limit, eps, true);
+        }
+        else if (ui->comboBox_2->currentText() == "Задача на вырезанном прямоугольнике")
+        {
+            solution = solveConjugateGradientCut(startSolution, f, n, m, limit, eps);
         }
     }
-
+    if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
+    {
+        accurateSolution = std::vector<std::vector<double>>(n + 1, std::vector<double> (m + 1, 0));
+    }
+    else if (ui->comboBox_2->currentText() == "Задача на вырезанном прямоугольнике")
+    {
+        accurateSolution = std::vector<std::vector<double>>(n/2 + 1, std::vector<double> (m + 1, 0));
+        for (int i = 0; i < n/2; ++i) {
+            accurateSolution.push_back(std::vector<double> (m/2 + 1, 0));
+        }
+    }
+    if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
+    {
+        for (unsigned int i = 0; i < n + 1 ; ++i)
+        {
+            for (unsigned int j = 0; j < m + 1 ; ++j)
+            {
+                accurateSolution[i][j] = acc_u(a + i * h, c + j * k);
+            }
+        }
+    }
+    else if (ui->comboBox_2->currentText() == "Задача на вырезанном прямоугольнике")
+    {
+        for (unsigned int i = 0; i < n + 1 ; ++i)
+        {
+            for (unsigned int j = 0; j < m/2 + 1 ; ++j)
+            {
+                accurateSolution[i][j] = acc_u(a + i * h, c + j * k);
+            }
+        }
+        for (unsigned int i = 0; i < n/2 + 1 ; ++i)
+        {
+            for (unsigned int j = m/2+1; j < m + 1 ; ++j)
+            {
+                accurateSolution[i][j] = acc_u(a + i * h, c + j * k);
+            }
+        }
+    }
+    ui->tableWidget->clear();
     ui->tableWidget->setRowCount(m + 1);
     ui->tableWidget->setColumnCount(n + 1);
-
-    for (unsigned int i = 0; i < n+1; ++i)
+    if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
     {
-        for (unsigned int j = 0; j < m+1; ++j)
+        for (unsigned int i = 0; i < n+1; ++i)
         {
-            ui->tableWidget->setItem(i, j, new QTableWidgetItem(QString::number(solution[i][j])));
+            for (unsigned int j = 0; j < m+1; ++j)
+            {
+                ui->tableWidget->setItem(i, j, new QTableWidgetItem(QString::number(solution[i][j])));
+            }
+        }
+    }
+    else if (ui->comboBox_2->currentText() == "Задача на вырезанном прямоугольнике")
+    {
+        for (unsigned int i = 0; i < n + 1 ; ++i)
+        {
+            for (unsigned int j = 0; j < m/2 + 1 ; ++j)
+            {
+                ui->tableWidget->setItem(i, j, new QTableWidgetItem(QString::number(solution[i][j])));
+            }
+        }
+        for (unsigned int i = 0; i < n/2 + 1 ; ++i)
+        {
+            for (unsigned int j = m/2+1; j < m + 1 ; ++j)
+            {
+                ui->tableWidget->setItem(i, j, new QTableWidgetItem(QString::number(solution[i][j])));
+            }
         }
     }
     auto maxDiffSol = 0.0;
     auto maxXDiff = 0, maxYDiff = 0;
-    for (unsigned int i = 0; i < n + 1 ; ++i)
+    if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
     {
-        for (unsigned int j = 0; j < m + 1; ++j)
+        for (unsigned int i = 0; i < n + 1 ; ++i)
         {
-            double currentElem = abs(solution[i][j] - accurateSolution[i][j]);
-            if (currentElem > maxDiffSol){
-                maxDiffSol = currentElem;
-                maxXDiff = i;
-                maxYDiff = j;
+            for (unsigned int j = 0; j < m + 1; ++j)
+            {
+                double currentElem = abs(solution[i][j] - accurateSolution[i][j]);
+                if (currentElem > maxDiffSol){
+                    maxDiffSol = currentElem;
+                    maxXDiff = i;
+                    maxYDiff = j;
+                }
+            }
+        }
+    }
+
+    else if (ui->comboBox_2->currentText() == "Задача на вырезанном прямоугольнике")
+    {
+        for (unsigned int i = 0; i < n + 1 ; ++i)
+        {
+            for (unsigned int j = 0; j < m/2 + 1 ; ++j)
+            {
+                double currentElem = abs(solution[i][j] - accurateSolution[i][j]);
+                if (currentElem > maxDiffSol){
+                    maxDiffSol = currentElem;
+                    maxXDiff = i;
+                    maxYDiff = j;
+                }
+            }
+        }
+        for (unsigned int i = 0; i < n/2 + 1 ; ++i)
+        {
+            for (unsigned int j = m/2+1; j < m + 1 ; ++j)
+            {
+                double currentElem = abs(solution[i][j] - accurateSolution[i][j]);
+                if (currentElem > maxDiffSol){
+                    maxDiffSol = currentElem;
+                    maxXDiff = i;
+                    maxYDiff = j;
+                }
             }
         }
     }

@@ -30,6 +30,6 @@ private:
     Ui::MainWindow *ui;
 };
 
-std::vector<double> solve_Zeidel(std::vector<double> &startSolution, std::vector<double> &f, double h, double k);
+std::vector<double> solveZeidel(std::vector<double> &startSolution, std::vector<double> &f, double h, double k);
 
 #endif // MAINWINDOW_H

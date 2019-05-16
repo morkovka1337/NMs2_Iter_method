@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1019</width>
-    <height>575</height>
+    <height>666</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -88,7 +88,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Разбиений по х</string>
+     <string>Разбиений по y</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="textEdit">
@@ -150,7 +150,7 @@ p, li { white-space: pre-wrap; }
      <number>1000000</number>
     </property>
     <property name="value">
-     <number>1000</number>
+     <number>100</number>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_2">
@@ -169,12 +169,52 @@ p, li { white-space: pre-wrap; }
    <widget class="QTableWidget" name="tableWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>80</y>
+      <x>30</x>
+      <y>140</y>
       <width>961</width>
       <height>431</height>
      </rect>
     </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>70</y>
+      <width>331</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Метод сопряженных градиентов</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Метод Зейделя</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QComboBox" name="comboBox_2">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>70</y>
+      <width>331</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Задача на прямоугольнике</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Задача на вырезанном прямоугольнике</string>
+     </property>
+    </item>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -183,7 +223,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1019</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

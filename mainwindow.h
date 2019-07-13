@@ -26,10 +26,8 @@ private slots:
 
     void on_pushButton_2_clicked();
 
-private:
+public:
     Ui::MainWindow *ui;
 };
-
-std::vector<double> solveZeidel(std::vector<double> &startSolution, std::vector<double> &f, double h, double k);
 
 #endif // MAINWINDOW_H

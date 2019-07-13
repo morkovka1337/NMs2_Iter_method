@@ -345,6 +345,7 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
 
     }
     QMessageBox msgBox;
+
     msgBox.setInformativeText(QString("При решении Р.С. с помощью метода сопряженных градиентов с параметрами NMax = ") +
                               QString::number(N) + QString("\nи eps = ") +
                               QString::number(eps) + QString(" за S = ") +
@@ -352,7 +353,7 @@ std::vector<std::vector<double>> solveConjugateGradient(std::vector<std::vector<
                               QString::number(epsMax) + QString(" Невязка составила: ") + QString::number(residual)
 
                               );
-    msgBox.exec();
+    msgBox.show();
     return v;
 }
 
@@ -462,7 +463,7 @@ std::vector<std::vector<double>> solveConjugateGradientCut(std::vector<std::vect
                               QString::number(epsMax) + QString(" Невязка составила: ") + QString::number(residual)
 
                               );
-    msgBox.exec();
+    msgBox.show();
     return v;
 }
 
@@ -530,7 +531,7 @@ std::vector<std::vector<double>> solve_Zeidel(std::vector<std::vector<double>> &
                               QString::number(epsMax)+ QString(" и максимальной невязкой ||r|| =  ") +
                               QString::number(r)
                               );
-    msgBox.exec();
+    msgBox.show();
     return v;
 }
 
@@ -714,13 +715,17 @@ void MainWindow::on_pushButton_clicked()
     ui->tableWidget->clear();
     ui->tableWidget->setRowCount(m + 1);
     ui->tableWidget->setColumnCount(n + 1);
+    ui->tableWidget_2->clear();
+    ui->tableWidget_2->setRowCount(m + 1);
+    ui->tableWidget_2->setColumnCount(n + 1);
     if (ui->comboBox_2->currentText() == "Задача на прямоугольнике")
     {
         for (unsigned int i = 0; i < n+1; ++i)
         {
             for (unsigned int j = 0; j < m+1; ++j)
             {
-                ui->tableWidget->setItem(i, j, new QTableWidgetItem(QString::number(solution[i][j])));
+                ui->tableWidget->setItem(j, i, new QTableWidgetItem(QString::number(solution[i][m-j])));
+                ui->tableWidget_2->setItem(j, i, new QTableWidgetItem(QString::number(accurateSolution[i][m - j])));
             }
         }
     }
@@ -731,6 +736,7 @@ void MainWindow::on_pushButton_clicked()
             for (unsigned int j = 0; j < m/2 + 1 ; ++j)
             {
                 ui->tableWidget->setItem(i, j, new QTableWidgetItem(QString::number(solution[i][j])));
+                ui->tableWidget_2->setItem(i, j, new QTableWidgetItem(QString::number(accurateSolution[i][j])));
             }
         }
         for (unsigned int i = 0; i < n/2 + 1 ; ++i)
@@ -738,6 +744,7 @@ void MainWindow::on_pushButton_clicked()
             for (unsigned int j = m/2+1; j < m + 1 ; ++j)
             {
                 ui->tableWidget->setItem(i, j, new QTableWidgetItem(QString::number(solution[i][j])));
+                ui->tableWidget_2->setItem(i, j, new QTableWidgetItem(QString::number(accurateSolution[i][j])));
             }
         }
     }
@@ -786,13 +793,17 @@ void MainWindow::on_pushButton_clicked()
             }
         }
     }
-    QMessageBox msgBox;
-    msgBox.setInformativeText(QString("Тестовая задача решена с точностью ") +
-                              QString::number(maxDiffSol)+
-                              QString(" x =  ") + QString::number(a + maxXDiff * h) +
-                              QString(", y = ") + QString::number(c + maxYDiff * k)
-                              );
-    msgBox.exec();
+    ui->label_5->setText(QString("Тестовая задача решена с точностью ") +
+                         QString::number(maxDiffSol)+
+                         QString("\n Максимальное отклонение в точке x =  ") + QString::number(a + maxXDiff * h) +
+                         QString(", y = ") + QString::number(c + maxYDiff * k));
+//    QMessageBox msgBox;
+//    msgBox.setInformativeText(QString("Тестовая задача решена с точностью ") +
+//                              QString::number(maxDiffSol)+
+//                              QString(" x =  ") + QString::number(a + maxXDiff * h) +
+//                              QString(", y = ") + QString::number(c + maxYDiff * k)
+//                              );
+//    msgBox.show();
 }
 
 void MainWindow::on_pushButton_2_clicked()
@@ -911,13 +922,19 @@ void MainWindow::on_pushButton_2_clicked()
             }
         }
     }
-    QMessageBox msgBox;
-    msgBox.setInformativeText(QString("Основная задача решена с погрешностью ") + QString::number(maxDiffSol) +
-                              QString("\nМаксимальное отклонение численного от точного наблюдается в точке: x = ") +
+    ui->label_5->setText(QString("Основная задача решена с погрешностью ") + QString::number(maxDiffSol) +
+                         QString("\nМаксимальное отклонение численного от точного наблюдается в точке: \n x = ") +
 
-                              QString::number(1 + double(maxXDiff) * 2 * h) +
-                              QString(", y = ") +
-                              QString::number(2 + double(maxYDiff) * 2 * k) );
-    msgBox.exec();
+                         QString::number(1 + double(maxXDiff) * 2 * h) +
+                         QString(", y = ") +
+                         QString::number(2 + double(maxYDiff) * 2 * k));
+//    QMessageBox msgBox;
+//    msgBox.setInformativeText(QString("Основная задача решена с погрешностью ") + QString::number(maxDiffSol) +
+//                              QString("\nМаксимальное отклонение численного от точного наблюдается в точке: x = ") +
+
+//                              QString::number(1 + double(maxXDiff) * 2 * h) +
+//                              QString(", y = ") +
+//                              QString::number(2 + double(maxYDiff) * 2 * k) );
+//    msgBox.exec();
 
 }
